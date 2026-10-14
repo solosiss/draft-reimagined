@@ -4,7 +4,9 @@
   import { TEAMS, SERIES, saveTeams, type Teams, type BestOf } from './teams.svelte';
   import { toDataUrl, dominantColor } from './images';
 
-  let { onstart, onclose }: { onstart: () => void; onclose: () => void } = $props();
+  import { BROADCAST } from './mode';
+
+  let { onstart, ondemo, onclose }: { onstart: () => void; ondemo: () => void; onclose: () => void } = $props();
   let view = $state<'menu' | 'teams'>('menu');
   let box = $state<HTMLElement>();
   let draft = $state<Teams>($state.snapshot(TEAMS) as Teams);
@@ -60,9 +62,15 @@
     {#key view}
       {#if view === 'menu'}
         <h1 class="anim">Draft Reimagined</h1>
+        {#if BROADCAST}<p class="tag anim">Broadcast</p>{/if}
         <p class="sub anim">{TEAMS.blue.name} <i>vs</i> {TEAMS.red.name}<span class="fmt">Best of {SERIES.bestOf}</span></p>
         <nav>
-          <button class="btn primary anim" onclick={onstart}>Start draft</button>
+          {#if BROADCAST}
+            <button class="btn primary anim" onclick={onstart}>Connect to League client</button>
+            <button class="btn anim" onclick={ondemo}>Demo draft</button>
+          {:else}
+            <button class="btn primary anim" onclick={onstart}>Start draft</button>
+          {/if}
           <button class="btn anim" onclick={openSetup}>Team setup</button>
           <button class="btn anim" onclick={onclose}>Close</button>
         </nav>
@@ -114,6 +122,7 @@
   .box.wide { width: min(1000px, 94vw); }
   h1 { font-size: clamp(44px, 7.4vh, 80px); font-weight: 700; letter-spacing: 0.2em; white-space: nowrap; text-transform: uppercase; line-height: 1; text-indent: 0.2em; text-shadow: 0 4px 30px rgb(0 0 0 / 0.6); }
   h1.small { font-size: clamp(36px, 5.4vh, 56px); margin-bottom: 4px; }
+  .tag { font-size: 18px; letter-spacing: 0.5em; text-indent: 0.5em; text-transform: uppercase; color: var(--accent); margin-top: -6px; }
   .sub { font-size: 20px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 26px; }
   .fmt { display: block; margin-top: 6px; font-size: 15px; letter-spacing: 0.3em; opacity: 0.75; }
   .sub i { font-style: normal; margin: 0 10px; opacity: 0.6; }

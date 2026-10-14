@@ -9,7 +9,7 @@
   import { tileUrl } from '../champions.svelte';
   import { TEAMS, SERIES } from '../teams.svelte';
 
-  let { cs, swapFrom, onswap, fixMode = false, onfix }: { cs: ChampSelectState; swapFrom: number | null; onswap: (cell: number) => void; fixMode?: boolean; onfix?: (cell: number) => void } = $props();
+  let { cs, swapFrom, onswap, fixMode = false, onfix }: { cs: ChampSelectState; swapFrom: number | null; onswap?: (cell: number) => void; fixMode?: boolean; onfix?: (cell: number) => void } = $props();
   let root = $state<HTMLElement>();
   const LANE: Record<string, string> = { top: 'TOP', jungle: 'JUNGLE', middle: 'MIDDLE', bottom: 'BOTTOM', utility: 'SUPPORT' };
   const wins = $derived(Math.ceil(SERIES.bestOf / 2));
@@ -74,7 +74,7 @@
 
   <!-- fila 2: 5 picks por equipo y, entre ellos, el enfrentamiento de cada línea -->
   <div class="cards blue">
-    {#each cs.allies as s (s.cell_id)}<FinalCard slot={s} side="ally" swapSource={swapFrom === s.cell_id} onswap={() => onswap(s.cell_id)} fixable={fixMode} onselect={fixMode ? () => onfix?.(s.cell_id) : undefined} />{/each}
+    {#each cs.allies as s (s.cell_id)}<FinalCard slot={s} side="ally" swapSource={swapFrom === s.cell_id} onswap={onswap ? () => onswap(s.cell_id) : undefined} fixable={fixMode} onselect={fixMode ? () => onfix?.(s.cell_id) : undefined} />{/each}
   </div>
   <div class="ladder" aria-label="Lane matchups">
     {#each cs.allies as s (s.cell_id)}
@@ -82,7 +82,7 @@
     {/each}
   </div>
   <div class="cards red">
-    {#each cs.enemies as s (s.cell_id)}<FinalCard slot={s} side="enemy" swapSource={swapFrom === s.cell_id} onswap={() => onswap(s.cell_id)} fixable={fixMode} onselect={fixMode ? () => onfix?.(s.cell_id) : undefined} />{/each}
+    {#each cs.enemies as s (s.cell_id)}<FinalCard slot={s} side="enemy" swapSource={swapFrom === s.cell_id} onswap={onswap ? () => onswap(s.cell_id) : undefined} fixable={fixMode} onselect={fixMode ? () => onfix?.(s.cell_id) : undefined} />{/each}
   </div>
 
   <!-- fila 3: bans de cada equipo y marcador de la serie -->

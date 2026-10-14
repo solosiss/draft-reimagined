@@ -2,13 +2,19 @@
   import { onMount } from 'svelte';
   import ChampSelect from './lib/champ-select/ChampSelect.svelte';
   import Home from './lib/Home.svelte';
-  import { startChampSelect, resetChampSelect } from './lib/store/champSelect.svelte';
+  import { startChampSelect, startLive, resetChampSelect } from './lib/store/champSelect.svelte';
+  import { BROADCAST } from './lib/mode';
   import { loadChampions } from './lib/champions.svelte';
 
   let screen = $state<'home' | 'draft'>('home');
   let closeHint = $state(false);
 
+  // Coach: draft simulado manual. Broadcast: se conecta al cliente de League (solo lectura).
   function start() {
+    if (BROADCAST) startLive(); else startChampSelect();
+    screen = 'draft';
+  }
+  function demo() {
     startChampSelect();
     screen = 'draft';
   }
@@ -24,13 +30,15 @@
 
   onMount(() => {
     loadChampions();
-    if (new URLSearchParams(location.search).has('sim')) start(); // atajo de pruebas: ?sim salta el home
+    const q = new URLSearchParams(location.search);
+    if (q.has('sim')) demo();
+    else if (BROADCAST && q.has('live')) start(); // ?live: se conecta al cliente al abrir (útil para dejarlo fijo en una transmisión) // atajo de pruebas: ?sim salta el home
   });
 </script>
 
 <main>
   {#if screen === 'home'}
-    <Home onstart={start} onclose={close} />
+    <Home onstart={start} ondemo={demo} onclose={close} />
     {#if closeHint}<p class="hint">You can close this tab now.</p>{/if}
   {:else}
     <ChampSelect />

@@ -1,6 +1,7 @@
 name: Release
 
-# Al subir una etiqueta de versión (v0.1.0, v0.2.0...) compila los instaladores y los publica en GitHub Releases.
+# Al subir una etiqueta de versión (v0.2.0...) compila los dos productos (Coach y Broadcast) para Windows, macOS y Linux
+# y adjunta los instaladores a la Release de GitHub.
 on:
   push:
     tags: ['v*']
@@ -9,15 +10,26 @@ permissions:
   contents: write
 
 jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create the release if it does not exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" || gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes "Installers for Draft Reimagined (coach) and Draft Reimagined Broadcast. See the README for install notes."
+
   build:
+    needs: release
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
+        product: [coach, broadcast]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: ui
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,7 +39,11 @@ jobs:
           cache-dependency-path: ui/package-lock.json
       - run: npm ci
       - run: npm run check
-      - run: npm run build
-      - run: npx electron-builder --publish always
+      - run: npm test
+      - run: npm run dist:${{ matrix.product }} -- --publish never
+      - name: Upload installers
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          shopt -s nullglob
+          gh release upload "$GITHUB_REF_NAME" release/${{ matrix.product }}/*.exe release/${{ matrix.product }}/*.dmg release/${{ matrix.product }}/*.AppImage --clobber --repo "$GITHUB_REPOSITORY"

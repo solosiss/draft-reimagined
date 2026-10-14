@@ -1,0 +1,33 @@
+{
+  "appId": "dev.solosiss.draft-reimagined",
+  "productName": "Draft Reimagined",
+  "directories": {
+    "output": "release/coach"
+  },
+  "files": [
+    "dist/**",
+    "electron/main.cjs",
+    "package.json"
+  ],
+  "mac": {
+    "target": [
+      "dmg"
+    ],
+    "category": "public.app-category.utilities"
+  },
+  "win": {
+    "target": [
+      "nsis"
+    ]
+  },
+  "linux": {
+    "target": [
+      "AppImage"
+    ],
+    "category": "Utility"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  }
+}

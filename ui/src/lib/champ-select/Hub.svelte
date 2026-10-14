@@ -5,6 +5,7 @@
   import { champSelect, lockIn } from '../store/champSelect.svelte';
   import type { ChampSelectState } from '../types';
   import { TEAMS } from '../teams.svelte';
+  import { BROADCAST } from '../mode';
 
   let { cs }: { cs: ChampSelectState } = $props();
   const done = $derived([...cs.allies, ...cs.enemies].every((s) => s.is_locked));
@@ -63,7 +64,7 @@
   {/if}
   {#if cs.turn?.is_my_turn}{side} TURN{:else if cs.turn}IN PROGRESS{:else if prepick}SELECT A CHAMPION{:else if done}ADJUST LANES{/if}
   </span>
-  {#if cs.turn?.is_my_turn}
+  {#if !BROADCAST && cs.turn?.is_my_turn}
     <button class="lock" class:ban={cs.turn.action_type === 'ban'} disabled={!canLock} onclick={() => pick && lockIn(pick)}>
       {#if cs.turn.action_type === 'ban'}
         <svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true">

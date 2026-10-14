@@ -9,3 +9,6 @@ export type ChampSelectState = {
   bans: { ally_bans: number[]; enemy_bans: number[] }; // -1 marca un ban que no se hizo a tiempo
   turn: ActiveTurn | null; ends_at_ms: bigint | null; is_infinite_timer: boolean;
 };
+
+/** Marca, en las listas de bans, un ban que no se hizo a tiempo. */
+export const NO_BAN = -1;

@@ -1,0 +1,38 @@
+{
+  "files": [
+    "dist/**",
+    "electron/main.cjs",
+    "package.json",
+    "electron/lcu.cjs",
+    "electron/preload.cjs"
+  ],
+  "mac": {
+    "target": [
+      "dmg"
+    ],
+    "category": "public.app-category.utilities"
+  },
+  "win": {
+    "target": [
+      "nsis"
+    ]
+  },
+  "linux": {
+    "target": [
+      "AppImage"
+    ],
+    "category": "Utility"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  },
+  "appId": "dev.solosiss.draft-reimagined.broadcast",
+  "productName": "Draft Reimagined Broadcast",
+  "directories": {
+    "output": "release/broadcast"
+  },
+  "extraMetadata": {
+    "appMode": "broadcast"
+  }
+}

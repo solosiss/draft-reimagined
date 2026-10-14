@@ -10,6 +10,8 @@
   import Grid from './Grid.svelte';
   import PickSplash from './PickSplash.svelte';
   import FinalView from './FinalView.svelte';
+  import Standby from './Standby.svelte';
+  import { BROADCAST } from '../mode';
   import { TEAMS } from '../teams.svelte';
 
   const cs = $derived(champSelect.state);
@@ -97,7 +99,7 @@
     picksInit = true;
   });
   // Solo entre picks: durante un ban (aunque ya se haya fijado) se queda la grilla, no el último pick.
-  const showSplash = $derived(!!center && !cs?.turn?.is_my_turn && cs?.turn?.action_type !== 'ban');
+  const showSplash = $derived(!!center && (BROADCAST || (!cs?.turn?.is_my_turn && cs?.turn?.action_type !== 'ban')));
 
   // Cascada de entrada (una vez) y destello al fijar campeón (por diff, no por evento).
   $effect(() => {
@@ -145,6 +147,8 @@
         <div class="mid">
           {#key center.key}<PickSplash id={center.id} side={center.side} player={center.player} />{/key}
         </div>
+      {:else if BROADCAST}
+        <Standby />
       {:else}
         <Grid {unavailable} selected={champSelect.selection} onpick={hoverChampion} />
       {/if}
@@ -157,16 +161,17 @@
         {/if}
         {#each cs.allies as s (s.cell_id)}
           <Panel slot={s} side="ally" isMe={s.cell_id === cs.my_cell_id}
-                 active={isActive(s.cell_id)} fixable={fixMode && s.is_locked} onselect={fixMode ? (s.is_locked ? () => (fixCell = s.cell_id) : undefined) : prepick && champSelect.prepickCell !== null ? () => selectPrepickCell(s.cell_id) : undefined} swapSource={swapFrom === s.cell_id} onswap={() => swapClick(s.cell_id)} />
+                 active={isActive(s.cell_id)} fixable={fixMode && s.is_locked} onselect={fixMode ? (s.is_locked ? () => (fixCell = s.cell_id) : undefined) : prepick && champSelect.prepickCell !== null ? () => selectPrepickCell(s.cell_id) : undefined} swapSource={swapFrom === s.cell_id} onswap={BROADCAST ? undefined : () => swapClick(s.cell_id)} />
         {/each}
         <Hub {cs} />
         {#each cs.enemies as s (s.cell_id)}
           <Panel slot={s} side="enemy" isMe={false}
-                 active={isActive(s.cell_id)} fixable={fixMode && s.is_locked} onselect={fixMode ? (s.is_locked ? () => (fixCell = s.cell_id) : undefined) : prepick && champSelect.prepickCell !== null ? () => selectPrepickCell(s.cell_id) : undefined} swapSource={swapFrom === s.cell_id} onswap={() => swapClick(s.cell_id)} />
+                 active={isActive(s.cell_id)} fixable={fixMode && s.is_locked} onselect={fixMode ? (s.is_locked ? () => (fixCell = s.cell_id) : undefined) : prepick && champSelect.prepickCell !== null ? () => selectPrepickCell(s.cell_id) : undefined} swapSource={swapFrom === s.cell_id} onswap={BROADCAST ? undefined : () => swapClick(s.cell_id)} />
         {/each}
       </div>
       </div>
-      {#if finalizing}<FinalView {cs} {swapFrom} onswap={swapClick} {fixMode} onfix={(cell) => (fixCell = cell)} />{/if}
+      {#if finalizing}<FinalView {cs} {swapFrom} onswap={BROADCAST ? undefined : swapClick} {fixMode} onfix={(cell) => (fixCell = cell)} />{/if}
+      {#if !BROADCAST}
       <button class="undo" class:on={fixMode} onclick={() => (fixMode ? closeFix() : (fixMode = true))} disabled={!cs.allies.concat(cs.enemies).some((s) => s.is_locked)}
               title="Replace a pick" aria-label="Replace a pick" aria-pressed={fixMode}>
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -175,6 +180,7 @@
           <path d="M8 11h8M12 11v6" />
         </svg>
       </button>
+      {/if}
       {#if fixMode && fixCell === null}<p class="hint">Select the pick to replace · Esc to cancel</p>{/if}
       {#if fixSlot}
         <div class="modal" role="dialog" aria-label="Replace pick">
@@ -183,7 +189,7 @@
         </div>
       {/if}
     {:else}
-      <p class="wait">Waiting for Champion Select…</p>
+      <p class="wait">{#if !BROADCAST}Waiting for Champion Select…{:else if champSelect.status === 'searching'}Looking for the League client…{:else if champSelect.status === 'no-session'}League client found. Waiting for champion select…{:else if champSelect.status === 'connected'}Connected. Waiting for champion select…{:else}Reading the League client is not available here.{/if}</p>
     {/if}
   </div>
 

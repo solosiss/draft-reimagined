@@ -1,13 +1,12 @@
 // Simulación local del draft (solo navegador, sin LCU), todo manual: el coach elige por ambos lados (blue y red).
 // Estructura profesional: prepick (15 s, el coach declara intenciones por jugador) → ban phase 1 (3 y 3) → pick phase 1 → ban phase 2 (2 y 2) → pick phase 2 → 60 s de finalización. Todos los turnos duran 30 s.
 // En la app real estas fases las decide el LCU; esto existe para probar la UI sin League.
-import type { ChampSelectState, PlayerSlot } from '../types';
+import { NO_BAN, type ChampSelectState, type PlayerSlot } from '../types';
 import { champions, preloadSplash, splashUrl } from '../champions.svelte';
 import { TEAMS } from '../teams.svelte';
 
 const PREPICK_MS = 15000;
 const TURN_MS = 30000, BAN_GRACE_MS = 2000; // 30 s por turno (bans y picks); un ban sin fijar a los 32 s se salta sin banear
-export const NO_BAN = -1; // marca de un ban que no se hizo a tiempo
 const FINAL_MS = 60000; // finalización: periodo de gracia para los trades
 const BAN_GAP = 3300, PICK_GAP = 2800, SKIP_GAP = 600; // pausa tras cada acción (showcase del ban ~2,9 s; el pick abre su panel ~2,2 s)
 const POS = ['top', 'jungle', 'middle', 'bottom', 'utility'];
