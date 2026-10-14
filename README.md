@@ -1,5 +1,7 @@
 # Draft Reimagined
 
+> **Work in progress.** This is an early prototype: features change often, things may break, and some parts are unfinished.
+
 A champion select (pick and ban) tool for League of Legends coaches and broadcasts, with a tournament-style final screen. By Tomás Salas.
 
 - Full pro draft flow: prepick, ban phase 1, pick phase 1, ban phase 2, pick phase 2 and a 60 s finalization.
@@ -29,7 +31,7 @@ This repository ships **no team data or logos**. Open **Team setup** to enter yo
 
 ## Status
 
-Prototype. The draft runs on a built-in simulation where you operate both sides by hand. Reading a live champion select from the League client is not implemented.
+Work in progress (WIP). The draft runs on a built-in simulation where you operate both sides by hand. Reading a live champion select from the League client is not implemented, and the series data (tournament, stage, game number and score) is still placeholder.
 
 ## License
 
