@@ -7,9 +7,21 @@ A champion select (pick and ban) tool for League of Legends coaches and broadcas
 - Full pro draft flow: prepick, ban phase 1, pick phase 1, ban phase 2, pick phase 2 and a 60 s finalization.
 - Manual control for both sides (blue and red), 30 s per turn, with lane swaps and pick replacement.
 - Final screen with team logos, lane matchups, bans and the series format (BO1, BO3, BO5).
-- Works offline. Everything runs on your computer.
+- Runs on your computer as a desktop app. Your teams and logos stay local.
 
-## Run it
+## Download
+
+Get the installer for your system from the [latest release](https://github.com/solosiss/draft-reimagined/releases/latest):
+
+- **Windows:** the `.exe` installer.
+- **macOS:** the `.dmg`. The app is not code-signed yet, so macOS may say it is damaged or from an unidentified developer. Right-click the app and choose **Open**, or run `xattr -cr "/Applications/Draft Reimagined.app"` once.
+- **Linux:** the `.AppImage` (`chmod +x` it, then run it).
+
+Windows may also show a "protected your PC" notice because the app is not signed. Choose **More info**, then **Run anyway**.
+
+Champion names and art are loaded from public community servers, so the first launch needs an internet connection.
+
+## Run it from source
 
 ```bash
 cd ui
@@ -24,6 +36,8 @@ Open the printed address. Start from the home screen, or skip it while testing:
 | `/` | Home screen (start draft, team setup, close) |
 | `/?sim` | Starts the simulated draft right away |
 | `/?sim=final` | Jumps to the final screen with a finished draft |
+
+To open it as a desktop window instead of a browser tab: `npm run electron`. To build installers locally: `npm run dist` (output in `ui/release/`).
 
 ## Teams and logos
 

@@ -8,3 +8,6 @@ ui/public/teams/
 
 # salidas locales de herramientas
 .archify/
+
+# instaladores generados
+release/
