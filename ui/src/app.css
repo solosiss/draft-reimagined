@@ -2,6 +2,12 @@
 @property --team-blue-2 { syntax: '<color>'; inherits: true; initial-value: #3d8bff; }
 @property --team-red { syntax: '<color>'; inherits: true; initial-value: #ff4d5e; }
 @property --team-red-2 { syntax: '<color>'; inherits: true; initial-value: #ff4d5e; }
+/* Valores animables del tema de botones (ver lib/Button.svelte): respiración, giro del borde y elevación en hover */
+@property --breath { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --a { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@property --lift { syntax: '<number>'; inherits: true; initial-value: 0; }
+@keyframes breathe { 0%, 100% { --breath: 0; } 50% { --breath: 1; } }
+@keyframes spin { to { --a: 360deg; } }
 
 :root {
   --bg-0: #07090d;
@@ -16,6 +22,7 @@
   --team-red-2: #ff4d5e;
   --ban-red: #ff4d5e; /* rojo semántico de bans y urgencia, independiente de los colores del equipo */
   --accent: #d4a64a;
+  --gold: #c8aa6e; --gold-hi: #e9dcc0; --gold-lo: #785a28;
   --ban: #5a6272;
   --font: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
 

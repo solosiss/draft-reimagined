@@ -1,6 +1,7 @@
 <script lang="ts">
   import { gsap } from 'gsap';
   import LiveBackground from './champ-select/LiveBackground.svelte';
+  import Button from './Button.svelte';
   import { TEAMS, SERIES, saveTeams, type Teams, type BestOf } from './teams.svelte';
   import { toDataUrl, dominantColor } from './images';
 
@@ -66,13 +67,13 @@
         <p class="sub anim">{TEAMS.blue.name} <i>vs</i> {TEAMS.red.name}<span class="fmt">Best of {SERIES.bestOf}</span></p>
         <nav>
           {#if BROADCAST}
-            <button class="btn primary anim" onclick={onstart}>Connect to League client</button>
-            <button class="btn anim" onclick={ondemo}>Demo draft</button>
+            <Button variant="primary" class="anim" onclick={onstart}>Connect to League client</Button>
+            <Button class="anim" onclick={ondemo}>Demo draft</Button>
           {:else}
-            <button class="btn primary anim" onclick={onstart}>Start draft</button>
+            <Button variant="primary" class="anim" onclick={onstart}>Start draft</Button>
           {/if}
-          <button class="btn anim" onclick={openSetup}>Team setup</button>
-          <button class="btn anim" onclick={onclose}>Close</button>
+          <Button class="anim" onclick={openSetup}>Team setup</Button>
+          <Button class="anim" onclick={onclose}>Close</Button>
         </nav>
       {:else}
         <h1 class="anim small">Team setup</h1>
@@ -105,8 +106,8 @@
           {#if error}<p class="err" role="alert">{error}</p>{/if}
           <p class="note anim">Images are stored on this computer only and never uploaded.</p>
           <div class="row anim">
-            <button type="button" class="btn" onclick={() => (view = 'menu')}>Back</button>
-            <button type="submit" class="btn primary">Save</button>
+            <Button type="button" onclick={() => (view = 'menu')}>Back</Button>
+            <Button variant="primary" type="submit">Save</Button>
           </div>
         </form>
       {/if}
@@ -127,16 +128,7 @@
   .fmt { display: block; margin-top: 6px; font-size: 15px; letter-spacing: 0.3em; opacity: 0.75; }
   .sub i { font-style: normal; margin: 0 10px; opacity: 0.6; }
   nav, form { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-  .btn {
-    position: relative; font: inherit; font-size: 22px; letter-spacing: 0.24em; text-transform: uppercase; text-indent: 0.24em; color: var(--text);
-    padding: 16px 24px; cursor: pointer; background: rgb(13 17 23 / 0.7); border: 1px solid var(--line); backdrop-filter: blur(6px);
-    transition: border-color 0.25s, background 0.25s, transform 0.25s;
-  }
-  .btn:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .btn:active { transform: scale(0.98); }
-  .btn:focus-visible, input:focus-visible, .mini:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
-  .btn.primary { color: var(--bg-0); background: var(--accent); border-color: var(--accent); font-weight: 700; }
-  .btn.primary:hover { background: color-mix(in oklch, var(--accent) 85%, #fff); }
+  input:focus-visible, .mini:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
 
   .format { display: flex; align-items: center; justify-content: center; gap: 10px; }
   .format span { font-size: 14px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--text-dim); margin-right: 8px; }
@@ -170,7 +162,7 @@
 
   .err { color: var(--ban-red); font-size: 17px; letter-spacing: 0.06em; text-align: center; }
   .note { font-size: 14px; letter-spacing: 0.06em; color: var(--text-dim); text-align: center; }
-  .row { display: flex; gap: 12px; margin-top: 4px; } .row .btn { flex: 1; }
+  .row { display: flex; gap: 12px; margin-top: 4px; } .row :global(.btn) { flex: 1; }
   footer { position: relative; flex: none; z-index: 1; padding: 12px 0 18px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; letter-spacing: 0.1em; color: var(--text-dim); opacity: 0.6; }
   .by { font-size: 17px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--text); opacity: 0.95; }
   @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
