@@ -21,22 +21,35 @@ const clean = (t: Partial<Team> | undefined, base: Team): Team => ({
 });
 
 // Datos de la serie (placeholders: se editan aquí). Ganadores necesarios = ceil(bestOf / 2).
-export const SERIES = $state({ tournament: 'Tournament', stage: 'Stage', game: 1, bestOf: 3 as BestOf, score: [0, 0] as [number, number] });
+export type Series = { tournament: string; stage: string; game: number; bestOf: BestOf; score: [number, number]; tournamentLogo: string | null };
+export const SERIES = $state<Series>({ tournament: 'Tournament', stage: 'Stage', game: 1, bestOf: 3, score: [0, 0], tournamentLogo: null });
+
+const cleanSeries = (x: Partial<Series> | undefined, base: Series): Series => {
+  const n = (v: unknown, max: number, d: number) => (Number.isInteger(v) && (v as number) >= 0 && (v as number) <= max ? (v as number) : d);
+  const bo = [1, 3, 5].includes(x?.bestOf as number) ? (x!.bestOf as BestOf) : base.bestOf;
+  return {
+    tournament: typeof x?.tournament === 'string' ? x.tournament.trim().slice(0, 40) : base.tournament,
+    stage: typeof x?.stage === 'string' ? x.stage.trim().slice(0, 40) : base.stage,
+    game: Math.max(1, n(x?.game, 5, base.game)), bestOf: bo,
+    score: [n(x?.score?.[0], 3, 0), n(x?.score?.[1], 3, 0)],
+    tournamentLogo: typeof x?.tournamentLogo === 'string' ? x.tournamentLogo : null,
+  };
+};
 
 export const TEAMS = $state<Teams>(defaultTeams());
 try {
   const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null');
   if (saved) {
     const d = defaultTeams(); Object.assign(TEAMS.blue, clean(saved.blue, d.blue)); Object.assign(TEAMS.red, clean(saved.red, d.red));
-    if ([1, 3, 5].includes(saved.bestOf)) SERIES.bestOf = saved.bestOf;
+    Object.assign(SERIES, cleanSeries(saved.series ?? { bestOf: saved.bestOf }, SERIES));
   }
 } catch { /* sin almacenamiento o datos dañados: se usan los equipos por defecto */ }
 
-/** Guarda los equipos; devuelve false si el navegador no pudo persistirlos (p. ej. logos demasiado grandes). */
-export function saveTeams(next: Teams, bestOf: BestOf = SERIES.bestOf): boolean {
+/** Guarda equipos y datos de la serie; devuelve false si el navegador no pudo persistirlos (p. ej. logos demasiado grandes). */
+export function saveTeams(next: Teams, series: Series = $state.snapshot(SERIES) as Series): boolean {
   const d = defaultTeams();
   Object.assign(TEAMS.blue, clean(next.blue, d.blue));
   Object.assign(TEAMS.red, clean(next.red, d.red));
-  SERIES.bestOf = bestOf;
-  try { localStorage.setItem(KEY, JSON.stringify({ ...$state.snapshot(TEAMS), bestOf })); return true; } catch { return false; }
+  Object.assign(SERIES, cleanSeries(series, SERIES));
+  try { localStorage.setItem(KEY, JSON.stringify({ ...$state.snapshot(TEAMS), series: $state.snapshot(SERIES) })); return true; } catch { return false; }
 }

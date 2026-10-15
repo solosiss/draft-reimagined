@@ -4,12 +4,15 @@
 import { NO_BAN, type ChampSelectState, type PlayerSlot } from '../types';
 import { champions, preloadSplash, splashUrl } from '../champions.svelte';
 import { TEAMS } from '../teams.svelte';
+import lanes from '../lanes.json';
+import { bestOrder, swapsFor } from './assign';
 
 const PREPICK_MS = 15000;
 const TURN_MS = 30000, BAN_GRACE_MS = 2000; // 30 s por turno (bans y picks); un ban sin fijar a los 32 s se salta sin banear
 const FINAL_MS = 60000; // finalización: periodo de gracia para los trades
 const BAN_GAP = 3300, PICK_GAP = 2800, SKIP_GAP = 600; // pausa tras cada acción (showcase del ban ~2,9 s; el pick abre su panel ~2,2 s)
 const POS = ['top', 'jungle', 'middle', 'bottom', 'utility'];
+const BOT_THINK = [2000, 5000], BOT_LOCK_GAP = 600, BOT_SWAP_START = 3000, BOT_SWAP_GAP = 1800; // bots (demo del broadcast): tiempo de "pensar", pausa entre señalar y fijar, y ritmo de los swaps de la final
 
 type Action = { kind: 'ban' | 'pick'; cell: number; phase: string; done: boolean };
 // B = blue (celdas 0-4), R = red (celdas 5-9); cada equipo usa sus celdas en orden de aparición. Las líneas se cambian a mano con el swap.
@@ -44,7 +47,8 @@ export class Sim {
   private timers: number[] = [];
   private idx = 0;
 
-  constructor(skipToFinal = false) {
+  // `bots`: demo del broadcast; ambos lados juegan solos (picks al azar) y en la final se ordenan por línea. El coach siempre es manual.
+  constructor(skipToFinal = false, private bots = false) {
     if (skipToFinal) { // ?sim=final: draft ya completo, para ver la fase final sin jugarlo
       const ids = [266, 64, 103, 202, 412, 122, 254, 238, 81, 53];
       [...this.st.allies, ...this.st.enemies].forEach((s, i) => Object.assign(s, { champion_id: ids[i], is_locked: true }));
@@ -52,6 +56,7 @@ export class Sim {
       this.acts.forEach((a) => (a.done = true)); this.prepick = false; this.advance();
       return;
     }
+    if (this.bots) { this.prepick = false; this.advance(); return; } // los bots no hacen prepick
     this.st.is_infinite_timer = false; this.st.ends_at_ms = BigInt(Date.now() + PREPICK_MS);
     this.after(PREPICK_MS, () => { this.prepick = false; this.advance(); });
   }
@@ -85,6 +90,7 @@ export class Sim {
     if (i < 0) { // finalización: 30 s para los swaps de línea
       this.st.turn = null; this.phase = null;
       this.st.is_infinite_timer = false; this.st.ends_at_ms = BigInt(Date.now() + FINAL_MS);
+      if (this.bots) this.after(BOT_SWAP_START, () => this.sortLanes());
       return;
     }
     const a = this.acts[i];
@@ -100,6 +106,35 @@ export class Sim {
       this.st.is_infinite_timer = false; this.st.ends_at_ms = BigInt(Date.now() + TURN_MS);
       this.after(TURN_MS, () => this.endPick(i, this.sel && !this.taken().has(this.sel) ? this.sel : this.randomFree()));
     }
+    if (this.bots) this.botTurn(i, a);
+  }
+
+  // Bot: piensa un rato, señala un campeón al azar (se ve la intención) y lo fija un momento después.
+  private botTurn(i: number, a: Action) {
+    const id = this.randomFree();
+    const think = BOT_THINK[0] + Math.random() * (BOT_THINK[1] - BOT_THINK[0]);
+    this.after(think, () => {
+      if (a.kind === 'pick') this.slotOf(a.cell).pick_intent = id;
+      this.sel = id;
+      this.after(BOT_LOCK_GAP, () => (a.kind === 'ban' ? this.endBan(i, id) : this.endPick(i, id)));
+    });
+  }
+
+  // Final con bots: cada equipo reparte sus picks por línea con swaps visibles, uno tras otro (azul y rojo alternados).
+  private sortLanes() {
+    const queue = ([0, 5] as const).map((base) => {
+      const team = (base === 0 ? this.st.allies : this.st.enemies);
+      const cur = team.map((s) => s.champion_id ?? 0);
+      return swapsFor(cur, bestOrder(cur, lanes as Record<string, string[]>)).map(([p, q]) => [base + p, base + q] as const);
+    });
+    const order = Array.from({ length: Math.max(...queue.map((q) => q.length)) }, (_, k) => queue.map((q) => q[k]).filter(Boolean)).flat();
+    order.forEach(([x, y], k) => this.after(k * BOT_SWAP_GAP, () => this.swap(x, y)));
+  }
+
+  private swap(cellA: number, cellB: number) {
+    const a = this.slotOf(cellA), b = this.slotOf(cellB);
+    [a.champion_id, b.champion_id] = [b.champion_id, a.champion_id];
+    [a.pick_intent, b.pick_intent] = [b.pick_intent, a.pick_intent];
   }
 
   private async endBan(i: number, id: number | null) {

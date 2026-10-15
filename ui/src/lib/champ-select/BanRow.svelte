@@ -12,7 +12,7 @@
     <div class="group {g.side}" aria-label="bans {g.side}">
       {#each slots(g.list) as id, i (i)}
         {#if id && id > 0}
-          <BanTile {id} side={g.side as 'ally' | 'enemy'} showName />
+          <BanTile {id} side={g.side as 'ally' | 'enemy'} />
         {:else if id === -1}
           <div class="slot skipped" title="No ban"><span class="x"></span></div>
         {:else if intent?.side === g.side && i === g.list.length}
@@ -30,13 +30,12 @@
   .bans {
     position: relative; z-index: 1; height: 84px; padding: 0 16px;
     display: flex; align-items: center; justify-content: space-between;
-    background: linear-gradient(var(--bg-1), transparent);
   }
   .group { display: flex; gap: 6px; }
   .slot { width: 44px; height: 44px; background: var(--bg-2); border: 1px solid var(--line); }
   .group { align-items: flex-start; }
   .slot.skipped { position: relative; overflow: hidden; background: #000; }
-  .slot.skipped .x { position: absolute; left: -10%; top: 50%; width: 120%; height: 3px; margin-top: -1.5px; background: var(--ban-red); box-shadow: 0 0 6px var(--ban-red); transform: rotate(-45deg); }
+  .slot.skipped .x { position: absolute; left: -10%; top: 50%; width: 120%; height: 3px; margin-top: -1.5px; background: var(--ban-red); transform: rotate(-45deg); }
   .slot.intent { padding: 0; opacity: 0.75; animation: ghost 1.2s ease-in-out infinite alternate; }
   .slot.intent.ally { border-color: var(--team-blue); }
   .slot.intent.enemy { border-color: var(--team-red); }

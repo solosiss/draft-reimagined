@@ -37,3 +37,20 @@ export function dominantColor(url: string): Promise<string> {
     img.src = url;
   });
 }
+
+/** true si el logo es mayormente oscuro (se pierde sobre el fondo oscuro): luminancia media de sus píxeles opacos < 0.35. */
+export function isDarkLogo(url: string): Promise<boolean> {
+  return new Promise((ok) => {
+    const img = new Image();
+    img.onload = () => {
+      const ctx = Object.assign(document.createElement('canvas'), { width: 32, height: 32 }).getContext('2d')!;
+      ctx.drawImage(img, 0, 0, 32, 32);
+      const d = ctx.getImageData(0, 0, 32, 32).data;
+      let lum = 0, w = 0;
+      for (let i = 0; i < d.length; i += 4) { const a = d[i + 3] / 255; lum += (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255 * a; w += a; }
+      ok(w > 0 && lum / w < 0.35);
+    };
+    img.onerror = () => ok(false);
+    img.src = url;
+  });
+}

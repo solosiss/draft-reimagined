@@ -108,10 +108,13 @@
     mm.add('(prefers-reduced-motion: no-preference)', () => {
       if (!entered) {
         entered = true;
-        gsap.from(strip!.querySelectorAll('.panel'), {
-          yPercent: 8, opacity: 0, duration: 0.6, ease: 'power3.out',
-          stagger: { each: 0.05, from: 'end' },
-        });
+        // Orden de entrada: 1) solo la tira horizontal (y su barra de tiempo) sube desde abajo, 2) los bans se "pegan" desde el frente
+        // hacia la pantalla uno tras otro, 3) los logos del centro se dibujan (ver Standby, que espera a que esto termine).
+        const bottom = [strip!, ui!.querySelector('.bar')].filter(Boolean);
+        gsap.fromTo(bottom, { y: strip!.offsetHeight + 30 }, { y: 0, duration: 0.7, ease: 'power3.out', clearProps: 'transform' });
+        // todos los bans (blue y red) a la vez
+        gsap.from(ui!.querySelectorAll('.bans .slot, .bans .wrap'), { scale: 2.4, opacity: 0, duration: 0.35, ease: 'power3.in', delay: 0.5, clearProps: 'transform,opacity' });
+        gsap.from(ui!.querySelector('.bans .label'), { opacity: 0, duration: 0.35, delay: 0.5, clearProps: 'opacity' });
       }
       for (const s of [...cs.allies, ...cs.enemies]) {
         if (s.is_locked && !locked.has(s.cell_id)) {
@@ -195,7 +198,7 @@
 
 <style>
   .ui { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
-  .screen { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; transition: --team-blue 0.8s, --team-blue-2 0.8s, --team-red 0.8s, --team-red-2 0.8s; }
+  .screen { position: relative; overflow: hidden; width: 100%; height: 100%; display: flex; flex-direction: column; transition: --team-blue 0.8s, --team-blue-2 0.8s, --team-red 0.8s, --team-red-2 0.8s; }
   .undo {
     position: absolute; z-index: 6; right: 16px; bottom: 16px; display: grid; place-items: center; width: 54px; height: 54px; padding: 0; cursor: pointer;
     color: var(--text); background: rgb(7 9 13 / 0.72); border: 1px solid var(--line); border-radius: 50%; backdrop-filter: blur(6px);
@@ -212,7 +215,8 @@
   .modal h2 { font-size: 30px; letter-spacing: 0.14em; text-transform: uppercase; }
   .modal header button { font: inherit; font-size: 17px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text); background: none; border: 1px solid var(--line); padding: 6px 18px; cursor: pointer; }
   .modal header button:hover { border-color: var(--text-dim); }
-  .mid { position: relative; z-index: 1; flex: 1; min-height: 0; overflow: hidden; container-type: size; }
+  /* el splash sube por detrás de la fila de bans (84 px, ver BanRow) para llegar hasta el borde superior */
+  .mid { position: relative; z-index: 0; margin-top: -84px; flex: 1; min-height: 0; overflow: hidden; container-type: size; }
   .strip { position: relative; z-index: 1; display: flex; flex: 0 0 min(34vh, 300px); }
   .wait { position: relative; margin: auto; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; }
 </style>

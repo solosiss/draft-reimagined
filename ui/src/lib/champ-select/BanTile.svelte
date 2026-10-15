@@ -42,7 +42,7 @@
   img.gray { filter: grayscale(1) brightness(0.8); }
   .line {
     position: absolute; left: -10%; top: 50%; width: 120%; height: 3px; margin-top: -1.5px;
-    background: var(--ban-red); box-shadow: 0 0 6px var(--ban-red);
+    background: var(--ban-red);
     transform: rotate(-45deg);
   }
 </style>

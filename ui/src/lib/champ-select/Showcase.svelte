@@ -31,8 +31,8 @@
   .veil { position: absolute; inset: 0; background: linear-gradient(to right, rgb(7 9 13 / 0.85), transparent 60%); }
   .enemy .veil { background: linear-gradient(to left, rgb(7 9 13 / 0.85), transparent 60%); }
   .strike {
-    position: absolute; inset: 0; pointer-events: none; filter: drop-shadow(0 0 8px var(--ban-red));
-    background: linear-gradient(to top right, transparent calc(50% - 3.5px), var(--ban-red) calc(50% - 3.5px), var(--ban-red) calc(50% + 3.5px), transparent calc(50% + 3.5px));
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to top right, transparent calc(50% - 6px), var(--ban-red) calc(50% - 6px), var(--ban-red) calc(50% + 6px), transparent calc(50% + 6px));
     clip-path: inset(0 100% 0 0); animation: strike 0.35s cubic-bezier(0.5, 0, 0.2, 1) 0.3s forwards;
   }
   @keyframes strike { to { clip-path: inset(0 0 0 0); } }

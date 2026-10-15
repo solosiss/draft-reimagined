@@ -26,7 +26,7 @@ export const champSelect = {
 
 /** Arranca un draft simulado. `?sim=final` salta a la fase final con un draft ya completo (para pruebas). */
 export function startChampSelect() {
-  _sim = new Sim(new URLSearchParams(location.search).get('sim') === 'final');
+  _sim = new Sim(new URLSearchParams(location.search).get('sim') === 'final', BROADCAST); // en broadcast el demo lo juegan bots
   _state = _sim.st;
 }
 

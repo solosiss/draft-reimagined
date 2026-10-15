@@ -2,7 +2,7 @@
   import { gsap } from 'gsap';
   import LiveBackground from './champ-select/LiveBackground.svelte';
   import Button from './Button.svelte';
-  import { TEAMS, SERIES, saveTeams, type Teams, type BestOf } from './teams.svelte';
+  import { TEAMS, SERIES, saveTeams, type Teams, type Series, type BestOf } from './teams.svelte';
   import { toDataUrl, dominantColor } from './images';
 
   import { BROADCAST } from './mode';
@@ -11,7 +11,7 @@
   let view = $state<'menu' | 'teams'>('menu');
   let box = $state<HTMLElement>();
   let draft = $state<Teams>($state.snapshot(TEAMS) as Teams);
-  let bestOf = $state<BestOf>(SERIES.bestOf);
+  let sd = $state<Series>($state.snapshot(SERIES) as Series);
   let error = $state('');
   const FORMATS: BestOf[] = [1, 3, 5];
   const LANES = ['Top', 'Jungle', 'Mid', 'Bot', 'Support'];
@@ -24,10 +24,18 @@
     gsap.from(box.querySelectorAll('.anim'), { opacity: 0, y: 18, duration: 0.55, ease: 'power3.out', stagger: 0.08 });
   });
 
-  function openSetup() { draft = $state.snapshot(TEAMS) as Teams; bestOf = SERIES.bestOf; error = ''; view = 'teams'; }
+  function openSetup() { draft = $state.snapshot(TEAMS) as Teams; sd = $state.snapshot(SERIES) as Series; error = ''; view = 'teams'; }
   function save() {
-    if (!saveTeams(draft, bestOf)) { error = 'Not enough storage for these images. Try smaller logos.'; return; }
+    if (!saveTeams(draft, sd)) { error = 'Not enough storage for these images. Try smaller logos.'; return; }
     view = 'menu';
+  }
+  async function uploadTournament(e: Event) {
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    error = '';
+    try { sd.tournamentLogo = await toDataUrl(file); } catch { error = 'That file could not be read as an image.'; }
   }
   // Sube un logo: se reduce, se guarda en el borrador y (para el logo principal) propone el color del equipo.
   async function upload(side: 'blue' | 'red', field: 'logo' | 'wordmark', e: Event) {
@@ -72,18 +80,42 @@
           {:else}
             <Button variant="primary" class="anim" onclick={onstart}>Start draft</Button>
           {/if}
-          <Button class="anim" onclick={openSetup}>Team setup</Button>
+          <Button class="anim" onclick={openSetup}>Setup</Button>
           <Button class="anim" onclick={onclose}>Close</Button>
         </nav>
       {:else}
-        <h1 class="anim small">Team setup</h1>
+        <h1 class="anim small">Setup</h1>
         <form onsubmit={(e) => { e.preventDefault(); save(); }}>
-          <div class="format anim" role="radiogroup" aria-label="Match format">
-            <span>Match format</span>
-            {#each FORMATS as n}
-              <button type="button" role="radio" aria-checked={bestOf === n} class:on={bestOf === n} onclick={() => (bestOf = n)}>BO{n}</button>
-            {/each}
-          </div>
+          <section class="card tour anim">
+            <h2>Tournament</h2>
+            <div class="trow">
+              <div class="pick">
+                <div class="thumb">{#if sd.tournamentLogo}<img src={sd.tournamentLogo} alt="" />{:else}<span>None</span>{/if}</div>
+                <div class="pc">
+                  <strong>Tournament logo</strong><small>Shown above the timer.</small>
+                  <div class="pb">
+                    <label class="mini">Upload<input type="file" accept="image/*" onchange={uploadTournament} /></label>
+                    {#if sd.tournamentLogo}<button type="button" class="mini" onclick={() => (sd.tournamentLogo = null)}>Remove</button>{/if}
+                  </div>
+                </div>
+              </div>
+              <div class="tfields">
+                <label class="fld">Tournament<input bind:value={sd.tournament} maxlength="40" autocomplete="off" spellcheck="false" /></label>
+                <label class="fld">Stage<input bind:value={sd.stage} maxlength="40" autocomplete="off" spellcheck="false" /></label>
+              </div>
+            </div>
+            <div class="format" role="radiogroup" aria-label="Match format">
+              <span>Match format</span>
+              {#each FORMATS as n}
+                <button type="button" role="radio" aria-checked={sd.bestOf === n} class:on={sd.bestOf === n} onclick={() => (sd.bestOf = n)}>BO{n}</button>
+              {/each}
+            </div>
+            <div class="trow nums">
+              <label class="fld">Game<input type="number" min="1" max="5" bind:value={sd.game} /></label>
+              <label class="fld">{draft.blue.name} wins<input type="number" min="0" max="3" bind:value={sd.score[0]} /></label>
+              <label class="fld">{draft.red.name} wins<input type="number" min="0" max="3" bind:value={sd.score[1]} /></label>
+            </div>
+          </section>
           <div class="cols">
             {#each SIDES as s (s.key)}
               <section class="card anim {s.key}">
@@ -118,7 +150,8 @@
 
 <style>
   .home { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; overflow: auto; }
-  .bg { position: fixed; inset: 0; }
+  /* fondo del menú en azul hextech: solo redefine los colores que lee LiveBackground (botones y tarjetas no cambian) */
+  .bg { position: fixed; inset: 0; --team-blue: #0596aa; --team-red: #0a5a96; --accent: transparent; filter: brightness(0.85); }
   .box { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(440px, 88vw); padding: 24px 0; margin: auto 0; flex: none; }
   .box.wide { width: min(1000px, 94vw); }
   h1 { font-size: clamp(44px, 7.4vh, 80px); font-weight: 700; letter-spacing: 0.2em; white-space: nowrap; text-transform: uppercase; line-height: 1; text-indent: 0.2em; text-shadow: 0 4px 30px rgb(0 0 0 / 0.6); }
@@ -136,6 +169,11 @@
   .format button:hover { color: var(--text); border-color: var(--text-dim); }
   .format button.on { color: var(--bg-0); background: var(--accent); border-color: var(--accent); font-weight: 700; }
   .format button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .card.tour { --c: var(--accent); gap: 14px; }
+  .trow { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .tfields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-width: 260px; }
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  input[type='number'] { font: inherit; font-size: 20px; color: var(--text); padding: 7px 10px; background: rgb(7 9 13 / 0.8); border: 1px solid var(--line); width: 100%; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .card { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; background: rgb(13 17 23 / 0.78); border: 1px solid var(--line); border-top: 3px solid var(--c); backdrop-filter: blur(8px); }
   .card.blue { --c: var(--team-blue); } .card.red { --c: var(--team-red); }

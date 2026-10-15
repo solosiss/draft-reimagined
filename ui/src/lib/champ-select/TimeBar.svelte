@@ -25,11 +25,10 @@
 </div>
 
 <style>
-  .bar { position: relative; z-index: 2; height: 5px; background: var(--bg-0); border-block: 1px solid #5c4a24; }
+  .bar { position: relative; z-index: 2; height: 10px; background: var(--bg-0); }
   .fill {
     height: 100%; transform-origin: center; will-change: transform;
-    background: linear-gradient(to bottom, #f0d58c, #c8a24a 50%, #8a6a24);
-    box-shadow: 0 0 10px color-mix(in oklch, var(--accent) 60%, transparent);
+    background: #c8a24a;
   }
   .infinite .fill { transform: none !important; opacity: 0.35; }
 </style>
