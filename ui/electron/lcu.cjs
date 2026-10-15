@@ -42,7 +42,7 @@ async function findCredentials() {
   return line ? parseArgs(line) : null;
 }
 
-const agent = new https.Agent({ rejectUnauthorized: false }); // el cliente usa un certificado autofirmado, solo en 127.0.0.1
+const agent = new https.Agent({ rejectUnauthorized: false, keepAlive: true }); // el cliente usa un certificado autofirmado, solo en 127.0.0.1
 
 function get(creds, route) {
   return new Promise((resolve, reject) => {
@@ -63,7 +63,7 @@ function get(creds, route) {
  * Sondea la sesión de champ select. Estados: 'searching' (no hay cliente), 'no-session' (cliente abierto, sin champ select), 'connected'.
  * Solo emite una sesión cuando cambia (el temporizador se compara con margen para no emitir en cada sondeo).
  */
-function createReader({ onSession, onStatus, find = findCredentials, fetchSession = (c) => get(c, '/lol-champ-select/v1/session'), interval = 400, retry = 2000 }) {
+function createReader({ onSession, onStatus, find = findCredentials, fetchSession = (c) => get(c, '/lol-champ-select/v1/session'), interval = 1000, retry = 2000 }) {
   let creds = null, stop = false, timer = null, lastSig = null, lastEnd = 0, lastStatus = null;
   const status = (s) => { if (s !== lastStatus) { lastStatus = s; onStatus(s); } };
 
