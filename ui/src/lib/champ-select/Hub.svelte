@@ -1,5 +1,6 @@
 <script lang="ts">
   import Timer from './Timer.svelte';
+  import Button from '../Button.svelte';
   import { gsap } from 'gsap';
   import BanTile from './BanTile.svelte';
   import { champSelect, lockIn } from '../store/champSelect.svelte';
@@ -65,14 +66,16 @@
   {#if cs.turn?.is_my_turn}{side} TURN{:else if cs.turn}IN PROGRESS{:else if prepick}SELECT A CHAMPION{:else if done}ADJUST LANES{/if}
   </span>
   {#if !BROADCAST && cs.turn?.is_my_turn}
-    <button class="lock" class:ban={cs.turn.action_type === 'ban'} disabled={!canLock} onclick={() => pick && lockIn(pick)}>
-      {#if cs.turn.action_type === 'ban'}
+    {#if cs.turn.action_type === 'ban'}
+      <button class="lock ban" disabled={!canLock} onclick={() => pick && lockIn(pick)}>
         <svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true">
           <circle cx="12" cy="12" r="8.5" /><path d="M6 18L18 6" />
         </svg>
-      {/if}
-      <span class="txt">{cs.turn.action_type === 'ban' ? 'BAN' : 'LOCK IN'}</span>
-    </button>
+        <span class="txt">BAN</span>
+      </button>
+    {:else}
+      <Button variant="primary" disabled={!canLock} onclick={() => pick && lockIn(pick)}>Lock in</Button>
+    {/if}
   {/if}
 </section>
 
